@@ -1,5 +1,8 @@
 from typing import *
+import os
+
 import polars as pl
+import pyBigWig
 
 class Config:
     default_cse = ["chrom", "start", "end"]
@@ -97,13 +100,44 @@ class LocusExpressionNamespace:
             end = start + size
 
         return self.struct(chrom, start, end)
-
     
+    def load_bigwig(self, path: str, agg: Literal["mean", "max", "min", "sum"] = "mean") -> pl.Expr:
+        """
+        Loads aggregated data from a bigwig file for each region in the struct.
+        """
+        
+        def _fetch_data_batch(region_series: pl.Series) -> pl.Series:
+            try:
+                bw = pyBigWig.open(path)
+            except RuntimeError:
+                # Handle case where file doesn't exist by returning all nulls
+                return pl.Series([None] * len(region_series), dtype=pl.Float64)
+
+            results = []
+            for region in region_series:
+                # Polars passes each struct in the series as a Python dict
+                chrom, start, end = (region[col] for col in Config.default_cse)
+                try:
+                    # Use the .stats() method from pyBigWig to get the aggregated value
+                    value = bw.stats(chrom, start, end, type=agg)
+                    # .stats() returns a list; we want the single value, which can be None
+                    results.append(value[0] if value else None)
+                except RuntimeError:
+                    # This error occurs if the chromosome is not in the bigwig file
+                    results.append(None)
+            
+            bw.close()
+            # Return the list of results as a new Polars Series
+            return pl.Series(results, dtype=pl.Float64)
+
+        return self._expr.map_batches(_fetch_data_batch)
+
+
 
 df = pl.DataFrame({
-    "chrom1": ["chr1", "chr2", "chrX"],
-    "start1": [10, 1000, 150],
-    "end1": [20, 1280, 230]
+    "chrom1": ["chr1", "chr1", "chr1"],
+    "start1": [10000000, 101000000, 10200000],
+    "end1": [10100000, 10200000, 10300000]
 })
 
-print(df.loc.resize(10, suffix="1")) 
+print(df.loc.init("1").with_columns(ctcf = Config.locus.loc.load_bigwig("/home/benjamin/Documents/loopenh/raw/bigwig/CTCF_ENCFF682MFJ.bigWig")).loc.exit("1"))
