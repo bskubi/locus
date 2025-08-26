@@ -13,9 +13,8 @@ def request(requests_jsons):
             request = json.loads(request_json)
             assert request.get("type"), "Must specify 'type' key from options: [hictk]" 
         except Exception as e:
-            error = request.copy()
-            error["error"] = str(e)
-            print(error)
+            print(request_json)
+            raise e
         if request.get("type") == "hictk":
             keys = hictk_request(request)
             for key in keys:
