@@ -39,7 +39,7 @@ def hictk_request(request: dict) -> Generator[str, None, None]:
             region = {k: v for k, v in region_req.items() if k != "_cache_"}
             key = cache_directive.get("key", as_key({**file_req, **region}))
             if not reuse or key not in cache:
-                result = file.fetch(**region)
+                result = file.fetch(**region).to_numpy()
                 cache[key] = result
             yield key
         except Exception as e:
