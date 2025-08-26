@@ -1,12 +1,10 @@
 from typing import *
 from pathlib import Path
-import click
 import json
-from pydantic import BaseModel
+
+import click
 import hictkpy
-import numpy as np
 from diskcache import Cache
-import traceback
 
 from locus.requests.util import as_key, sanitize_keys
 
@@ -23,14 +21,11 @@ def hictk_request(request: dict) -> Generator[str, None, None]:
         path = Path(path)
         assert path.exists(), f"File not found at {path}"
 
-        try:
-            # There is a bug either in hictkpy or nanobind
-            # where the keys in dicts loaded from json are unable to bind.
-            # Only hardcoded strings seem to work.
-            kwargs = sanitize_keys(file_req, ["path", "resolution", "matrix_type", "matrix_unit"])
-            file = hictkpy.File(**kwargs)
-        except Exception as e:
-            traceback.print_exc()
+        # There is a bug either in hictkpy or nanobind
+        # where the keys in dicts loaded from json are unable to bind.
+        # Only hardcoded strings seem to work.
+        kwargs = sanitize_keys(file_req, ["path", "resolution", "matrix_type", "matrix_unit"])
+        file = hictkpy.File(**kwargs)
         cache = Cache(cache_req)
     except Exception as e:
         error = request.copy()
@@ -44,7 +39,7 @@ def hictk_request(request: dict) -> Generator[str, None, None]:
             region = {k: v for k, v in region_req.items() if k != "_cache_"}
             key = cache_directive.get("key", as_key({**file_req, **region}))
             if not reuse or key not in cache:
-                result = file.fetch(**region).to_numpy()
+                result = file.fetch(**region)
                 cache[key] = result
             yield key
         except Exception as e:

@@ -1,0 +1,10 @@
+name: locus
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python
+  - click
+  - diskcache
+  - hictkpy
+
