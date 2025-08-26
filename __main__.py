@@ -2,7 +2,7 @@ import json
 
 import click
 
-from locus.cli.request import request
+from locus.src.cli.request import request
 
 @click.group
 def locus():
