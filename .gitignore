@@ -1,4 +1,4 @@
-.pyc
+*.pyc
 uv.lock
 .venv
 *.egg-info

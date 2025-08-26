@@ -6,7 +6,7 @@ import click
 import hictkpy
 from diskcache import Cache
 
-from locus.src.requests.util import as_key, sanitize_keys
+from locus.requests.util import as_key, sanitize_keys
 
 def hictk_request(request: dict) -> Generator[str, None, None]:
     try:

@@ -3,7 +3,7 @@ import json
 import click
 from diskcache import Cache
 
-from locus.src.requests.hictk_request import hictk_request
+from locus.requests.hictk_request import hictk_request
 
 @click.command
 @click.argument("requests_jsons", nargs=-1)
