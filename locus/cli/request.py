@@ -8,6 +8,10 @@ from locus.requests.hictk_request import hictk_request
 @click.command
 @click.argument("requests_jsons", nargs=-1)
 def request(requests_jsons):
+    """Cache snips requested via json string
+
+    Note: Enclose json strings in single quotes!
+    """
     for request_json in requests_jsons:
         try:
             request = json.loads(request_json)

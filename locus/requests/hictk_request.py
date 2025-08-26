@@ -44,5 +44,5 @@ def hictk_request(request: dict) -> Generator[str, None, None]:
             yield key
         except Exception as e:
             error = region_req.copy()
-            error.update({"error": tr(e)})
+            error.update({"error": str(e)})
             yield error
